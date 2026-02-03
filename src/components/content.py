@@ -7,7 +7,7 @@ class ContentArea(tk.Frame):
     self.setup_ui()
   
   def setup_ui(self):
-    self.config(borderwidth=1, relief="solid", padding=10)
+    self.config(borderwidth=1, relief="solid", padding=10, width=500)
   
   def clear(self):
     for widget in self.winfo_children():

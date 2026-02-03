@@ -18,7 +18,8 @@ class Database:
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         type TEXT NOT NULL,
-        value TEXT NOT NULL
+        value TEXT NOT NULL,
+        callback TEXT NOT NULL DEFAULT ''
       )
       ''')
       conn.commit()
@@ -32,6 +33,7 @@ class Database:
           name TEXT NOT NULL,
           type TEXT NOT NULL, 
           value TEXT NOT NULL, 
+          callback TEXT NOT NULL DEFAULT ''
           created_at DEFAULT CURRENT_TIMESTAMP
         )
       ''')
@@ -74,7 +76,7 @@ class Database:
     query = f'INSERT INTO {table} ({columns}) VALUES ({placeholders})'
     return self.execute(query, tuple(data.values()))
   
-  def update(self, table:str, data:dict[str, any], where_clause:str, where_params: dict[str, any]):
+  def update(self, table:str, data:dict[str, any], where_clause:str, where_params: tuple):
     set_clause = ', '.join([f'{k} = ?' for k in data.keys()])
     query = f'UPDATE {table} SET {set_clause} WHERE {where_clause}'
     params = tuple(data.values()) + tuple(where_params)

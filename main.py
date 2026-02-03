@@ -4,7 +4,7 @@ from src.components.content import ContentArea
 from ttkthemes import ThemedTk
 
 BASE_WINDOW = 360
-MIN_WINDOW_WIDTH = BASE_WINDOW * 3
+MIN_WINDOW_WIDTH = BASE_WINDOW * 4
 MIN_WINDOW_HEIGHT = BASE_WINDOW * 2
 
 SIDEBAR_WIDTH = 200
