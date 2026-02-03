@@ -4,7 +4,7 @@ from src.components.content import ContentArea
 from ttkthemes import ThemedTk
 
 BASE_WINDOW = 360
-MIN_WINDOW_WIDTH = BASE_WINDOW * 4
+MIN_WINDOW_WIDTH = BASE_WINDOW * 3
 MIN_WINDOW_HEIGHT = BASE_WINDOW * 2
 
 SIDEBAR_WIDTH = 200
@@ -25,15 +25,37 @@ class MyApp(ThemedTk):
   
   def setup_ui(self):
     self.config(theme="winxpblue")
+    style = tk.Style()
+
+    style.configure("Treeview", 
+      background='#f0f0f0',
+      foreground= 'black', 
+      rowheight=25, 
+      fieldbackground='#f0f0f0'
+    )
+
+    style.configure("Treeview.Heading",
+      background='#4caf50', 
+      foreground='black', 
+      relief='flat', 
+      font=("Arial", 10, "bold")
+    )
+
+    style.map("Treeview",
+      background=[("selected", "#4caf50")]
+    )
 
     main_frm = tk.Frame(self, padding=20)
     main_frm.pack(fill="both", expand=True)
 
-    self.content = ContentArea(main_frm)
-    self.content.pack(side="right", fill="both", expand=True, padx=(10, 0))
-
+    # sidebar
     self.sidebar = Sidebar(main_frm, on_menu_click=self.handle_menu)
     self.sidebar.pack(side="left", fill="y")
+
+    # content
+    self.content = ContentArea(main_frm)
+    self.content.pack(side="left", fill="both", expand=True, padx=(10, 0))
+
 
     self.content.show_apps()
 

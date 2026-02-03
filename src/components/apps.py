@@ -60,7 +60,7 @@ class Apps(tk.Frame):
     self.table.column("name", width=200, anchor="w", minwidth=100)
     self.table.column("type", width=100, anchor="center", minwidth=80)
     self.table.column("value", width=300, anchor="w", minwidth=150)
-    self.table.column("callback", width=300, anchor="w", minwidth=200)
+    self.table.column("callback",width=500, anchor="w", minwidth=200)
 
     self.table.pack(side="left", fill="both", expand=True)
 
