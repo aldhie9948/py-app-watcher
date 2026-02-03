@@ -1,6 +1,7 @@
 from tkinter import Tk, ttk as tk
 from src.components.sidebar import Sidebar
 from src.components.content import ContentArea
+from ttkthemes import ThemedTk
 
 BASE_WINDOW = 360
 MIN_WINDOW_WIDTH = BASE_WINDOW * 3
@@ -10,17 +11,21 @@ SIDEBAR_WIDTH = 200
 WRAP_LENGTH_OFFSET = 50
 WRAP_LENGTH = MIN_WINDOW_WIDTH - SIDEBAR_WIDTH - WRAP_LENGTH_OFFSET 
 
-class MyApp(Tk):
+class MyApp(ThemedTk):
   def __init__(self):
     super().__init__()
     self.setup_window()
     self.setup_ui()
   
   def setup_window(self):
+    x = round((self.winfo_screenwidth() // 5))
+    y = round((self.winfo_screenheight() // 5))
     self.title("MMS App Monitoring")
-    self.geometry(f'{MIN_WINDOW_WIDTH}x{MIN_WINDOW_HEIGHT}')
+    self.geometry(f'{MIN_WINDOW_WIDTH}x{MIN_WINDOW_HEIGHT}+{x}+{y}')
   
   def setup_ui(self):
+    self.config(theme="winxpblue")
+
     main_frm = tk.Frame(self, padding=20)
     main_frm.pack(fill="both", expand=True)
 
@@ -29,6 +34,8 @@ class MyApp(Tk):
 
     self.sidebar = Sidebar(main_frm, on_menu_click=self.handle_menu)
     self.sidebar.pack(side="left", fill="y")
+
+    self.content.show_apps()
 
   def handle_menu(self, menu:str):
     value = menu.lower()

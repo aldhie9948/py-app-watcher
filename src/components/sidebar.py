@@ -7,17 +7,17 @@ class Sidebar(tk.Frame):
     self.setup_ui()
   
   def setup_ui(self):
-    self.config(borderwidth=5, relief="solid", width=200)
+    self.config(borderwidth=1, relief="solid", width=200)
     self.pack_propagate(False)
     tk.Label(self, text="Sidebar Menu", font=("Arial", 12, "bold")).pack(pady=10)
 
     menus = ["Dashboard", "Apps", "Logs"]
     for menu in menus: 
-      tk.Button(self, text=menu, command=lambda m=menu: self.handle_click(m)).pack(fill="x", pady=5, padx=10,)
+      tk.Button(self, text=menu, command=lambda m=menu: self.handle_click(m)).pack(fill="x", pady=5, padx=10)
 
     tk.Separator(self, orient="horizontal").pack(fill="x", pady=20)
-    tk.Button(self, text="Start").pack(fill="x")
-    tk.Button(self, text="Stop").pack(fill="x", side="bottom")
+    tk.Button(self, text="Start").pack(fill="x", padx=10)
+    tk.Button(self, text="Stop").pack(fill="x", side="bottom", padx=10, pady=(0,10))
 
   def handle_click(self, menu:str): 
     if self.on_menu_click:

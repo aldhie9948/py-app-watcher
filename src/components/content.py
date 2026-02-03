@@ -1,14 +1,13 @@
 from tkinter import ttk as tk
-from src.helpers.database import Database
+from src.components.apps import Apps
 
 class ContentArea(tk.Frame):
   def __init__(self, parent, **kwargs):
     super().__init__(parent, **kwargs)
     self.setup_ui()
-    self.db = Database()
   
   def setup_ui(self):
-    self.config(borderwidth=5, relief="solid")
+    self.config(borderwidth=1, relief="solid", padding=10)
   
   def clear(self):
     for widget in self.winfo_children():
@@ -20,8 +19,7 @@ class ContentArea(tk.Frame):
   
   def show_apps(self):
     self.clear()
-    apps = self.db.fetch_all('SELECT * FROM apps')
-    for app in apps:
-      tk.Label(self, text=app['name']).pack()
+    self.apps = Apps(self)
+    self.apps.pack(side="left", fill="both", expand=True)
     
     
