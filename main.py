@@ -56,8 +56,8 @@ class MyApp(ThemedTk):
     self.content = ContentArea(main_frm)
     self.content.pack(side="left", fill="both", expand=True, padx=(10, 0))
 
-
-    self.content.show_apps()
+    # default page
+    self.content.show_dashboard()
 
   def handle_menu(self, menu:str):
     value = menu.lower()

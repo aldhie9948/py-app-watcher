@@ -27,7 +27,6 @@ class Apps(tk.Frame):
 
     self.render_apps()
   
-  
   def create_table(self):
     # table frame
     table_frm = tk.Frame(self)
@@ -53,7 +52,7 @@ class Apps(tk.Frame):
     self.table.heading("id", text="ID")
     self.table.heading("name", text="Name")
     self.table.heading("type", text="Type")
-    self.table.heading("value", text="Value")
+    self.table.heading("value", text="Target")
     self.table.heading("callback", text="Callback")
 
     self.table.column("id", width=50, anchor="center", minwidth=50)
@@ -245,10 +244,6 @@ class Apps(tk.Frame):
       self.modal.destroy()
 
   def render_apps(self):
-    # clear container terlebih dahulu
-    for widget in self.winfo_children():
-      widget.destroy()
-    
     # render apps
     if not self.apps_data:
       tk.Label(self, text="No data found yet.", justify="center", anchor="center").pack(fill="both", expand=True)

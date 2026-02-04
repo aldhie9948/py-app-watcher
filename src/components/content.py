@@ -1,5 +1,6 @@
 from tkinter import ttk as tk
 from src.components.apps import Apps
+from src.components.dashboard import Dashboard
 
 class ContentArea(tk.Frame):
   def __init__(self, parent, **kwargs):
@@ -15,8 +16,9 @@ class ContentArea(tk.Frame):
 
   def show_dashboard(self):
     self.clear()
-    tk.Label(self, text="dashboard dasdklaskdjaskdj").pack()
-  
+    self.dashboard = Dashboard(self)
+    self.dashboard.pack(side="left", fill="both", expand=True)
+
   def show_apps(self):
     self.clear()
     self.apps = Apps(self)
