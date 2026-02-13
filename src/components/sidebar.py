@@ -12,7 +12,10 @@ class Sidebar(tk.Frame):
         self.pack_propagate(False)
         tk.Label(self, text="Sidebar Menu", font=("Arial", 12, "bold")).pack(pady=10)
 
-        menus = ["Dashboard", "Apps", "Logs"]
+        menus = [
+            "Dashboard",
+            "Apps",
+        ]
         for menu in menus:
             tk.Button(
                 self, text=menu, command=lambda m=menu: self.handle_click(m)

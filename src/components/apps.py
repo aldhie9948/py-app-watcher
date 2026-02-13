@@ -8,12 +8,13 @@ class Apps(tk.Frame):
         super().__init__(parent, **kwargs)
         self.db = Database()
         self.apps_data = []
-        self.setup_ui()
         self.load_data()
+        self.setup_ui()
 
     def setup_ui(self):
         # setup container atau layout
         self.notif = Notification(self)
+        self.render_apps()
 
     def load_data(self):
         # load data dari database
@@ -25,8 +26,6 @@ class Apps(tk.Frame):
         self.type_text = StringVar()
         self.value_text = StringVar()
         self.callback_text = StringVar()
-
-        self.render_apps()
 
     def create_table(self):
         # table frame
@@ -40,7 +39,7 @@ class Apps(tk.Frame):
         x_scroll = tk.Scrollbar(table_frm, orient="horizontal")
         x_scroll.pack(side="bottom", fill="x")
 
-        columns = ("id", "name", "type", "value", "callback")
+        columns = ("id", "name", "type", "target", "callback")
         self.table = tk.Treeview(
             table_frm,
             columns=columns,
@@ -50,17 +49,14 @@ class Apps(tk.Frame):
         )
 
         # konfigurasi kolom table
-        self.table.heading("id", text="ID")
-        self.table.heading("name", text="Name")
-        self.table.heading("type", text="Type")
-        self.table.heading("value", text="Target")
-        self.table.heading("callback", text="Callback")
+        for col in columns:
+            self.table.heading(col, text=col.upper())
 
-        self.table.column("id", width=50, anchor="center", minwidth=50)
-        self.table.column("name", width=200, anchor="w", minwidth=100)
-        self.table.column("type", width=100, anchor="center", minwidth=80)
-        self.table.column("value", width=300, anchor="w", minwidth=150)
-        self.table.column("callback", width=500, anchor="w", minwidth=200)
+        self.table.column("id", width=10, anchor="center")
+        self.table.column("name", width=100, anchor="w")
+        self.table.column("type", width=50, anchor="center")
+        self.table.column("target", width=100, anchor="center")
+        self.table.column("callback", width=200, anchor="w")
 
         self.table.pack(side="left", fill="both", expand=True)
 
@@ -134,7 +130,9 @@ class Apps(tk.Frame):
             )
 
             self.notif.show_info_popup()
-            self.load_data()
+
+            # refresh data
+            self.refresh_data()
         except Exception as e:
             self.notif.show_error_popup(e)
 
@@ -221,7 +219,7 @@ class Apps(tk.Frame):
                 "name": self.name_text.get(),
                 "type": self.type_text.get(),
                 "value": self.value_text.get(),
-                "callback": self.callback_entry.get("1.0", END),
+                "callback": self.callback_entry.get("1.0", END).strip(),
             }
 
             table_name = "apps"
@@ -230,7 +228,6 @@ class Apps(tk.Frame):
             # variable id menentukan form update atau create
             if not self.id_text.get():
                 self.db.insert(table_name, data)
-                self.notif.show_info_popup(msg)
             else:
                 where_clause = "id = ?"
                 where_params = (self.id_text.get(),)
@@ -240,28 +237,27 @@ class Apps(tk.Frame):
                     where_clause=where_clause,
                     where_params=where_params,
                 )
-
                 msg = "App updated successfully."
-                self.notif.show_info_popup(msg)
 
-            # refetch data
-            self.load_data()
-            self.render_table()
+            self.notif.show_info_popup(msg)
 
-        except Exception as e:
-            msg = e
-            self.notif.show_error_popup(msg=msg)
-
-        finally:
+            # Tutup modal dulu
             self.modal.destroy()
 
+            # Refresh data dan table
+            self.after(10, self.refresh_data)
+
+        except Exception as e:
+            self.notif.show_error_popup(msg=str(e))
+
+    def refresh_data(self):
+        # Load ulang data dari database
+        self.apps_data = self.db.fetch_all("SELECT * FROM apps ORDER BY id DESC")
+
+        # Render ulang table saja (tidak perlu setup_ui ulang)
+        self.render_table()
+
     def render_apps(self):
-        # render apps
-        if not self.apps_data:
-            tk.Label(
-                self, text="No data found yet.", justify="center", anchor="center"
-            ).pack(fill="both", expand=True)
-            return
 
         header_frm = tk.Frame(self)
         header_frm.pack(side="top", fill="x")
@@ -278,6 +274,12 @@ class Apps(tk.Frame):
         add_app_btn.pack(side="right")
 
         tk.Separator(self).pack(pady=10, fill="x", side="top")
+
+        if not self.apps_data:
+            tk.Label(
+                self, text="No data found yet.", justify="center", anchor="center"
+            ).pack(fill="both", expand=True)
+            return
 
         # render table
         self.create_table()

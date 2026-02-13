@@ -1,4 +1,5 @@
-from tkinter import ttk as tk
+from tkinter import ttk as tk, StringVar
+import time
 from src.helpers.check_utils import execute_callback
 from src.helpers.database import Database
 from src.helpers.stoppable_thread import StoppableThread
@@ -10,6 +11,8 @@ class Dashboard(tk.Frame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, **kwargs)
         self.monitor_thread = StoppableThread()
+        self.is_monitoring_running = False
+        self.status_var = StringVar(value="Status: STOPPED")
         self.apps_data = []
         self.load_data()
         self.setup_ui()
@@ -33,7 +36,13 @@ class Dashboard(tk.Frame):
         x_scroll = tk.Scrollbar(table_frm, orient="horizontal")
         x_scroll.pack(side="bottom", fill="x")
 
-        columns = ("id", "name", "type", "target", "status")
+        columns = (
+            "id",
+            "status",
+            "name",
+            "type",
+            "target",
+        )
         self.table = tk.Treeview(
             table_frm,
             columns=columns,
@@ -43,13 +52,13 @@ class Dashboard(tk.Frame):
         )
 
         for col in columns:
-            self.table.heading(col, text=col.capitalize())
+            self.table.heading(col, text=col.upper())
 
-        self.table.column("id", width=30, anchor="center")
+        self.table.column("id", width=10, anchor="center")
+        self.table.column("status", width=50, anchor="center")
         self.table.column("name", width=200, anchor="w")
         self.table.column("type", width=50, anchor="center")
-        self.table.column("target", width=200, anchor="w")
-        self.table.column("status", width=50, anchor="center")
+        self.table.column("target", width=200, anchor="center")
 
         self.table.pack(fill="both", expand=True)
 
@@ -62,14 +71,23 @@ class Dashboard(tk.Frame):
     def create_header(self):
         header_frm = tk.Frame(self)
         header_frm.pack(side="top", fill="x")
+
         tk.Label(header_frm, text="Monitoring Status", font=("Arial", 12, "bold")).pack(
             side="left", fill="x"
         )
+
         start_btn = tk.Button(header_frm, command=self.start_monitoring, text="Start")
         stop_btn = tk.Button(header_frm, command=self.stop_monitoring, text="Stop")
 
         stop_btn.pack(side="right")
         start_btn.pack(side="right", padx=10)
+
+        # Gunakan StringVar dan set initial value
+        tk.Label(header_frm, textvariable=self.status_var).pack(side="right")
+
+    def update_status_label(self):
+        status = "RUNNING" if self.is_monitoring_running else "STOPPED"
+        self.status_var.set(f"Status: {status}")
 
     def load_data_table(self):
         status_apps: list[dict[str, any]] = []
@@ -85,10 +103,10 @@ class Dashboard(tk.Frame):
                 "end",
                 values=(
                     app["id"],
+                    "⭕" if result["status"] else "❌",
                     app["name"],
                     app["type"],
                     app["value"],
-                    "⭕" if result["status"] else "❌",
                 ),
             )
 
@@ -112,6 +130,11 @@ class Dashboard(tk.Frame):
     def task_monitoring(self, stop_flag, interval=5):
         while not stop_flag.is_set():
             print("Task monitoring running...")
+
+            # Update UI dari main thread menggunakan after
+            self.after(0, lambda: setattr(self, "is_monitoring_running", True))
+            self.after(0, self.update_status_label)
+
             apps = self.load_data_table()
             for app in apps:
                 status = app["status"]
@@ -124,6 +147,10 @@ class Dashboard(tk.Frame):
 
             if stop_flag.wait(timeout=interval):
                 break
+
+        # Update status saat stop
+        self.after(0, lambda: setattr(self, "is_monitoring_running", False))
+        self.after(0, self.update_status_label)
         print("Task monitoring stopped.")
 
     def start_monitoring(self):
@@ -137,12 +164,17 @@ class Dashboard(tk.Frame):
         print("Monitoring stopped")
 
     def render_page(self):
+        self.create_header()
+
+        tk.Separator(self, orient="horizontal").pack(pady=10, fill="x")
+
         if not self.apps_data:
-            label = tk.Label(self, text="No data found yet.", justify="center")
+            label = tk.Label(
+                self, text="No data found yet.", justify="center", anchor="center"
+            )
             label.pack(fill="both", expand=True)
             return
 
-        self.create_header()
-        tk.Separator(self, orient="horizontal").pack(pady=10, fill="x")
         self.create_table()
+
         self.start_monitoring()
