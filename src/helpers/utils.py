@@ -1,5 +1,6 @@
-def groupby(data:list, key:str):
+def groupby(data: list, key: str):
     from collections import defaultdict
+
     grouped = defaultdict(list)
     for item in data:
         grouped[item[key]].append(item)
