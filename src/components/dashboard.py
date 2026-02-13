@@ -118,7 +118,7 @@ class Dashboard(tk.Frame):
                 callback = app["callback"]
 
                 if status:
-                    return
+                    continue
                 elif not status and callback:
                     execute_callback(callback)
 

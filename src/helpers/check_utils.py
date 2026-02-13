@@ -6,6 +6,7 @@ import re
 import psutil
 from typing import TypedDict
 import requests
+import threading
 
 
 class ProcessFound(TypedDict):
@@ -43,17 +44,21 @@ def check_website(url: str, timeout: int = 10) -> bool:
 
 
 def execute_callback(command: str):
-    try:
-        process = subprocess.Popen(
-            command,
-            shell=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True,
-        )
+    def run_command():
+        try:
+            subprocess.run(
+                command,
+                shell=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            )
 
-        print(f"Callback dijalankan (PID: {process.pid}): {command}")
-        return True
-    except Exception as e:
-        print(f"Error callback: {e}")
-        return False
+            print(f"Callback selesai: {command}")
+        except subprocess.TimeoutExpired:
+            print(f"Callback timeout: {command}")
+        except Exception as e:
+            print(f"Error callback: {e}")
+
+    threading.Thread(target=run_command, daemon=True).start()
+    return True
