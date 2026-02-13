@@ -1,7 +1,9 @@
 from tkinter import ttk as tk
+from src.helpers.check_utils import execute_callback
 from src.helpers.database import Database
 from src.helpers.stoppable_thread import StoppableThread
 from src.helpers.check_utils import check_proccess, check_website, check_port
+from src.components.notification import Notification
 
 
 class Dashboard(tk.Frame):
@@ -14,7 +16,7 @@ class Dashboard(tk.Frame):
 
     def setup_ui(self):
         self.config()
-
+        self.notif = Notification(self)
         self.render_page()
 
     def load_data(self):
@@ -54,8 +56,8 @@ class Dashboard(tk.Frame):
         x_scroll.config(command=self.table.xview)
         y_scroll.config(command=self.table.yview)
 
-        # load data table
-        # self.load_data_table()
+        # load data
+        self.load_data_table()
 
     def create_header(self):
         header_frm = tk.Frame(self)
@@ -63,14 +65,21 @@ class Dashboard(tk.Frame):
         tk.Label(header_frm, text="Monitoring Status", font=("Arial", 12, "bold")).pack(
             side="left", fill="x"
         )
+        start_btn = tk.Button(header_frm, command=self.start_monitoring, text="Start")
+        stop_btn = tk.Button(header_frm, command=self.stop_monitoring, text="Stop")
+
+        stop_btn.pack(side="right")
+        start_btn.pack(side="right", padx=10)
 
     def load_data_table(self):
+        status_apps: list[dict[str, any]] = []
         # input data
         for item in self.table.get_children():
             self.table.delete(item)
 
         for app in self.apps_data:
-            status = self.check_status(app)
+            result = self.check_status(app)
+            status_apps.append(result)
             self.table.insert(
                 "",
                 "end",
@@ -79,14 +88,17 @@ class Dashboard(tk.Frame):
                     app["name"],
                     app["type"],
                     app["value"],
-                    "⭕" if status else "❌",
+                    "⭕" if result["status"] else "❌",
                 ),
             )
+
+        return status_apps
 
     def check_status(self, app: dict[str, any]):
         result = False
         type = app["type"]
         target = app["value"]
+        callback = app["callback"]
 
         if type == "port":
             result = check_port(target)
@@ -95,12 +107,20 @@ class Dashboard(tk.Frame):
         elif type == "url":
             result = check_website(target)
 
-        return result
+        return {"status": result, "callback": callback}
 
     def task_monitoring(self, stop_flag, interval=5):
         while not stop_flag.is_set():
             print("Task monitoring running...")
-            self.load_data_table()
+            apps = self.load_data_table()
+            for app in apps:
+                status = app["status"]
+                callback = app["callback"]
+
+                if status:
+                    return
+                elif not status and callback:
+                    execute_callback(callback)
 
             if stop_flag.wait(timeout=interval):
                 break
@@ -110,7 +130,7 @@ class Dashboard(tk.Frame):
         if self.monitor_thread.start(self.task_monitoring, interval=5):
             print("Monitoring started.")
         else:
-            print("Monitoring already running.")
+            self.notif.show_info_popup("Monitoring already running.")
 
     def stop_monitoring(self):
         self.monitor_thread.stop()
@@ -118,9 +138,8 @@ class Dashboard(tk.Frame):
 
     def render_page(self):
         if not self.apps_data:
-            tk.Label(self, text="No data found yet.", justify="center").pack(
-                fill="both", expand=True
-            )
+            label = tk.Label(self, text="No data found yet.", justify="center")
+            label.pack(fill="both", expand=True)
             return
 
         self.create_header()

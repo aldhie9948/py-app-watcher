@@ -1,4 +1,7 @@
 import socket
+import subprocess
+import os
+import shlex
 import re
 import psutil
 from typing import TypedDict
@@ -36,4 +39,21 @@ def check_website(url: str, timeout: int = 10) -> bool:
         response = requests.get(url=url, timeout=timeout)
         return response.status_code == 200
     except:
+        return False
+
+
+def execute_callback(command: str):
+    try:
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+
+        print(f"Callback dijalankan (PID: {process.pid}): {command}")
+        return True
+    except Exception as e:
+        print(f"Error callback: {e}")
         return False
